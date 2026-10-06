@@ -1,16 +1,20 @@
 class_name GridModel
 extends RefCounted
-## Pure-data model of the 8x4 battle field. No nodes, no rendering.
+## Pure-data model of the 7x4 battle field. No nodes, no rendering.
 ##
 ## Coordinates are Vector2i(column, row) with (0, 0) at the top-left.
-## Columns 0-3 start owned by the player side, columns 4-7 by the enemy side.
+## Columns 0-2 start owned by the player side, column 3 is neutral, and
+## columns 4-6 belong to the enemy side. Anyone may enter a neutral tile, but
+## like every tile it holds at most one combatant at a time.
 ## Tile ownership is stored per tile so it can change mid-battle later.
 
-enum Side { PLAYER, ENEMY }
+## NEUTRAL is only a tile owner; combatants are always PLAYER or ENEMY.
+enum Side { PLAYER, ENEMY, NEUTRAL }
 
-const COLUMNS := 8
+const COLUMNS := 7
 const ROWS := 4
-const PLAYER_COLUMNS := 4
+const PLAYER_COLUMNS := 3
+const NEUTRAL_COLUMN := 3
 
 var _owners: Array[int] = []
 var _occupants: Dictionary = {}  # Vector2i -> Combatant
@@ -20,12 +24,20 @@ func _init() -> void:
 	reset_ownership()
 
 
-## Restores the default split: left half player, right half enemy.
+## Restores the default split: player | neutral column | enemy.
 func reset_ownership() -> void:
 	_owners.resize(COLUMNS * ROWS)
 	for y in ROWS:
 		for x in COLUMNS:
-			_owners[_index(Vector2i(x, y))] = Side.PLAYER if x < PLAYER_COLUMNS else Side.ENEMY
+			_owners[_index(Vector2i(x, y))] = default_owner(x)
+
+
+static func default_owner(column: int) -> int:
+	if column < PLAYER_COLUMNS:
+		return Side.PLAYER
+	if column == NEUTRAL_COLUMN:
+		return Side.NEUTRAL
+	return Side.ENEMY
 
 
 ## +1 for the player side (attacks travel right), -1 for the enemy side.
@@ -55,9 +67,13 @@ func is_occupied(cell: Vector2i) -> bool:
 	return _occupants.has(cell)
 
 
-## A combatant may only stand on in-bounds, unoccupied tiles its side owns.
+## A combatant may only stand on in-bounds, unoccupied tiles that its side
+## owns or that are neutral.
 func can_enter(side: int, cell: Vector2i) -> bool:
-	return is_in_bounds(cell) and owner_of(cell) == side and not is_occupied(cell)
+	if not is_in_bounds(cell) or is_occupied(cell):
+		return false
+	var tile_owner := owner_of(cell)
+	return tile_owner == side or tile_owner == Side.NEUTRAL
 
 
 func place(combatant: Combatant, cell: Vector2i) -> bool:

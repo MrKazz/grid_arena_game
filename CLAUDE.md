@@ -11,9 +11,11 @@ Use these terms in code, comments, and conversation.
 
 | Term | Meaning |
 |---|---|
-| **Field** | The 8×4 battle grid. `GridModel`, `Vector2i(column, row)`, (0,0) top-left. |
-| **Side** | `GridModel.Side.PLAYER` (columns 0–3, left half) or `ENEMY` (columns 4–7, right half). |
-| **Tile ownership** | Each tile belongs to a side; combatants may only stand on their side's tiles. Ownership is per-tile so it can change mid-battle. |
+| **Field** | The 7×4 battle grid. `GridModel`, `Vector2i(column, row)`, (0,0) top-left. |
+| **Side** | A combatant is `GridModel.Side.PLAYER` or `ENEMY`. Tiles can also be `NEUTRAL`. Default layout: columns 0–2 player (blue), column 3 neutral (gray, `NEUTRAL_COLUMN`), columns 4–6 enemy (red). |
+| **Neutral column** | Either side may move onto a neutral tile, but not through it onto the other side's tiles. |
+| **Tile ownership** | Each tile belongs to a side or is neutral. Combatants may stand on their own side's tiles and on neutral tiles. Ownership is per-tile so it can change mid-battle. |
+| **Occupancy** | Every tile, neutral included, holds at most one combatant. A tile frees up when its occupant moves off or dies (dead combatants are removed from the grid). Nothing pushes occupants yet. |
 | **Facing / forward** | Player faces +x, enemies face −x. Card patterns are written for the player and mirrored automatically. |
 | **Combatant** | Anything on a tile with HP (player, enemies, later obstacles). |
 | **Card** | A `CardData` resource in `data/cards/`. Has damage, a targeting mode (`TILES` pattern, `ROW_FIRST_HIT` projectile, `AIMED` at the nearest opponent's tile), and a tile pattern. |
@@ -106,5 +108,6 @@ move the hand cursor and `use_card` toggles a card's selection.
   every enemy attack is telegraphed, and there are no invincibility frames after a hit.
 - Whether planning can also be opened at will, at a cost, or only when the gauge is full.
 - Whether unused queued cards carry over across plans (currently they do).
-- Tile-ownership mechanics (stealing or cracking tiles) and status effects.
+- Tile-ownership mechanics (stealing or cracking tiles), pushing combatants
+  off tiles (planned for later), and status effects.
 - Card cost/energy, card rarity, and deck-building between battles.

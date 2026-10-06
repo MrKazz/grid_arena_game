@@ -66,7 +66,7 @@ func test_damage_does_not_go_below_zero() -> void:
 
 func test_aimed_targets_nearest_opponent() -> void:
 	var far := Combatant.new(&"far", GridModel.Side.ENEMY, 100)
-	grid.place(far, Vector2i(7, 3))
+	grid.place(far, Vector2i(6, 3))
 	var card := Fixtures.card(&"lob", 20, CardData.Targeting.AIMED, [])
 	assert_eq(CardResolver.target_cells(card, player, grid), [Vector2i(5, 1)])
 	assert_eq(CardResolver.target_cells(card, enemy, grid), [Vector2i(2, 1)])
@@ -77,7 +77,7 @@ func test_telegraph_for_projectile_covers_row_ahead() -> void:
 	assert_eq(CardResolver.telegraph_cells(card, enemy, grid),
 			[Vector2i(4, 1), Vector2i(3, 1), Vector2i(2, 1), Vector2i(1, 1), Vector2i(0, 1)])
 	assert_eq(CardResolver.telegraph_cells(card, player, grid),
-			[Vector2i(3, 1), Vector2i(4, 1), Vector2i(5, 1), Vector2i(6, 1), Vector2i(7, 1)])
+			[Vector2i(3, 1), Vector2i(4, 1), Vector2i(5, 1), Vector2i(6, 1)])
 
 
 func test_telegraph_for_tiles_matches_targets() -> void:

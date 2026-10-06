@@ -49,15 +49,17 @@ func test_track_row_follows_player() -> void:
 	assert_eq(brain.combatant.cell, Vector2i(6, 2))
 
 
-func test_wander_moves_and_stays_on_enemy_side() -> void:
+func test_wander_stays_on_enemy_or_neutral_tiles() -> void:
 	var data := Fixtures.enemy(&"wanderer", EnemyData.Movement.WANDER, null, 10, 5, 1)
 	var brain := state.spawn_enemy(data, Vector2i(5, 1))
 	var visited := {}
 	for i in 400:
 		state.step()
 		visited[brain.combatant.cell] = true
-		assert_eq(state.grid.owner_of(brain.combatant.cell), GridModel.Side.ENEMY, "tick %d" % i)
-	assert_true(visited.size() >= 8, "explores the enemy half (visited %d tiles)" % visited.size())
+		assert_ne(state.grid.owner_of(brain.combatant.cell), GridModel.Side.PLAYER, "tick %d" % i)
+	assert_true(visited.size() >= 10, "explores its side (visited %d tiles)" % visited.size())
+	var used_neutral := visited.keys().any(func(cell: Vector2i) -> bool: return cell.x == GridModel.NEUTRAL_COLUMN)
+	assert_true(used_neutral, "wanders into the neutral column")
 
 
 func _wander_path(rng_seed: int) -> Array[Vector2i]:
@@ -172,7 +174,7 @@ func test_enemies_frozen_while_planning() -> void:
 
 func test_dead_enemy_cancels_its_attack() -> void:
 	var brain := state.spawn_enemy(Fixtures.enemy(&"lobber", EnemyData.Movement.STATIONARY, _lob(), 10, 5, 10, 5), Vector2i(6, 1))
-	state.spawn_enemy(Fixtures.enemy(&"dummy"), Vector2i(7, 3))  # keeps the battle going
+	state.spawn_enemy(Fixtures.enemy(&"dummy"), Vector2i(6, 3))  # keeps the battle going
 	_step(10)
 	assert_true(brain.is_winding_up())
 	state.try_basic_attack()
@@ -194,12 +196,12 @@ func test_spawns_come_from_config() -> void:
 	var cfg := Fixtures.config()
 	var spawn := EnemySpawn.new()
 	spawn.enemy = Fixtures.enemy(&"from_config", EnemyData.Movement.STATIONARY, null, 10, 5, 10, 33)
-	spawn.cell = Vector2i(7, 0)
+	spawn.cell = Vector2i(6, 0)
 	cfg.enemy_spawns = [spawn]
 	var s := BattleState.new(cfg)
 	assert_eq(s.brains.size(), 1)
 	assert_eq(s.enemies[0].id, &"from_config")
-	assert_eq(s.enemies[0].cell, Vector2i(7, 0))
+	assert_eq(s.enemies[0].cell, Vector2i(6, 0))
 	assert_eq(s.enemies[0].hp, 33)
 
 

@@ -100,7 +100,7 @@ func test_move_respects_cooldown_and_border() -> void:
 	assert_true(state.try_move(Vector2i.RIGHT))
 	assert_false(state.try_move(Vector2i.RIGHT), "cooldown")
 	_step(4)
-	assert_true(state.try_move(Vector2i.RIGHT))
+	assert_true(state.try_move(Vector2i.RIGHT), "into the neutral column")
 	assert_eq(state.player.cell, Vector2i(3, 1))
 	_step(4)
 	assert_false(state.try_move(Vector2i.RIGHT), "enemy side")
@@ -139,12 +139,12 @@ func test_killing_last_enemy_wins() -> void:
 	cfg.basic_attack_damage = 50
 	var s := BattleState.new(cfg)
 	var e := Combatant.new(&"e", GridModel.Side.ENEMY, 50)
-	s.add_enemy(e, Vector2i(6, 1))
+	s.add_enemy(e, Vector2i(5, 1))
 	s.confirm_plan([])
 	s.try_basic_attack()
 	assert_eq(s.phase, BattleState.Phase.ENDED)
 	assert_eq(s.winner, GridModel.Side.PLAYER)
-	assert_null(s.grid.occupant_at(Vector2i(6, 1)), "dead enemies leave the grid")
+	assert_null(s.grid.occupant_at(Vector2i(5, 1)), "dead enemies leave the grid")
 	s.step()
 	assert_eq(s.tick_count, 0, "no ticks after the battle ends")
 

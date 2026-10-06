@@ -9,7 +9,7 @@ script = ExtResource("1_battle")
 config = ExtResource("3_config")
 
 [node name="GridView" type="Node2D" parent="."]
-position = Vector2(97, 150)
+position = Vector2(125, 150)
 script = ExtResource("2_grid")
 
 [node name="Hud" type="CanvasLayer" parent="."]

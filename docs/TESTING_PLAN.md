@@ -22,6 +22,7 @@ going red.
 | Layer | Location | What it covers | Speed | Status |
 |---|---|---|---|---|
 | Unit: rules | `tests/unit/test_grid_model.gd`, `test_deck.gd`, `test_plan_gauge.gd`, `test_card_resolver.gd`, `test_battle_state.gd` | Grid bounds and ownership, movement, deck draw/discard/recycle/reshuffle, card conservation, targeting and mirroring, damage, plan/confirm validation, gauge, cooldowns, win/lose | ms | ✅ in place |
+| Unit: neutral column | `tests/unit/test_neutral_column.gd` | Middle column is neutral; both sides can enter it but not cross it; one occupant per tile for everyone; a tile frees when its occupant moves off or dies; wandering enemies route around an occupied neutral tile; attacks reach into and out of it | ms | ✅ in place |
 | Unit: enemy AI | `tests/unit/test_enemy_brain.gd` | Movement styles and intervals, staying on the enemy side, per-seed determinism, cooldown → telegraph → hit timing, dodging aimed and projectile attacks, no movement during wind-up, alignment gating, enemy kills end the battle, dead enemies cancel attacks, frozen while planning, spawning from config | ms | ✅ in place |
 | Determinism / replay | `tests/unit/test_replay_determinism.gd` | Same seed + same scripted inputs → identical state, including wandering/tracking enemies and their hits | ms | ✅ in place |
 | Data validation | `tests/unit/test_game_data.gd` | Every card, enemy attack and enemy loads, has an id matching its file name and sane numbers; enemies with attacks have a wind-up; default spawns are in bounds, on the enemy side and not stacked; default config is internally consistent | ms | ✅ in place |
@@ -92,7 +93,8 @@ the two `godot` commands in the script by hand.
 ## 6. Manual playtest checklist (per design change)
 
 - [ ] Movement feels responsive; holding a direction repeats at the intended rate.
-- [ ] Can't walk onto the enemy half or into occupied tiles.
+- [ ] Can't walk onto enemy tiles or into occupied tiles. Can walk into the gray column, unless an enemy is standing on that tile.
+- [ ] Enemies use the gray column too, and never step onto a gray tile you're standing on.
 - [ ] Battle opens in planning with a full hand; confirming with nothing selected works.
 - [ ] The gauge fills in the expected time; planning can't open early.
 - [ ] Selected cards queue in selection order; the HUD shows the queue.

@@ -7,19 +7,21 @@ func before_each() -> void:
 	grid = GridModel.new()
 
 
-func test_dimensions_are_8_by_4() -> void:
-	assert_eq(GridModel.COLUMNS, 8)
+func test_dimensions_are_7_by_4() -> void:
+	assert_eq(GridModel.COLUMNS, 7)
 	assert_eq(GridModel.ROWS, 4)
-	assert_true(GridModel.is_in_bounds(Vector2i(7, 3)))
-	assert_false(GridModel.is_in_bounds(Vector2i(8, 0)))
+	assert_true(GridModel.is_in_bounds(Vector2i(6, 3)))
+	assert_false(GridModel.is_in_bounds(Vector2i(7, 0)))
 	assert_false(GridModel.is_in_bounds(Vector2i(0, 4)))
 	assert_false(GridModel.is_in_bounds(Vector2i(-1, 0)))
 
 
-func test_left_half_player_right_half_enemy() -> void:
+func test_three_player_columns_one_neutral_three_enemy() -> void:
+	var expected_by_column := [GridModel.Side.PLAYER, GridModel.Side.PLAYER, GridModel.Side.PLAYER,
+			GridModel.Side.NEUTRAL, GridModel.Side.ENEMY, GridModel.Side.ENEMY, GridModel.Side.ENEMY]
 	for y in GridModel.ROWS:
 		for x in GridModel.COLUMNS:
-			var expected := GridModel.Side.PLAYER if x < 4 else GridModel.Side.ENEMY
+			var expected: int = expected_by_column[x]
 			assert_eq(grid.owner_of(Vector2i(x, y)), expected, "cell %d,%d" % [x, y])
 
 
@@ -47,7 +49,7 @@ func test_move_updates_cell_and_occupancy() -> void:
 	assert_eq(grid.occupant_at(Vector2i(1, 0)), a)
 
 
-func test_cannot_move_across_the_border() -> void:
+func test_cannot_move_from_neutral_onto_enemy_tiles() -> void:
 	var a := Combatant.new(&"a", GridModel.Side.PLAYER, 10)
 	grid.place(a, Vector2i(3, 2))
 	assert_false(grid.move(a, Vector2i(4, 2)))
@@ -96,5 +98,8 @@ func test_open_neighbours() -> void:
 	var blocker := Combatant.new(&"blocker", GridModel.Side.ENEMY, 10)
 	grid.place(me, Vector2i(4, 0))
 	grid.place(blocker, Vector2i(5, 0))
-	assert_eq(grid.open_neighbours(me.cell, me.side), [Vector2i(4, 1)],
-			"not off-grid, not across the border, not occupied")
+	assert_eq(grid.open_neighbours(me.cell, me.side), [Vector2i(4, 1), Vector2i(3, 0)],
+			"not off-grid, not occupied; neutral tiles count as open")
+	var other := Combatant.new(&"other", GridModel.Side.PLAYER, 10)
+	grid.place(other, Vector2i(3, 0))
+	assert_eq(grid.open_neighbours(me.cell, me.side), [Vector2i(4, 1)], "occupied neutral tile is not open")

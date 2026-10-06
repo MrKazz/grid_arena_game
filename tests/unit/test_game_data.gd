@@ -45,7 +45,7 @@ func test_default_config_is_sane() -> void:
 	assert_true(cfg.max_cards_per_plan <= cfg.hand_size)
 	assert_true(cfg.plan_gauge_ticks() >= 0)
 	assert_true(GridModel.is_in_bounds(cfg.player_start_cell))
-	assert_true(cfg.player_start_cell.x < GridModel.PLAYER_COLUMNS, "player starts on their side")
+	assert_eq(GridModel.default_owner(cfg.player_start_cell.x), GridModel.Side.PLAYER, "player starts on their side")
 	for card in cfg.starter_deck:
 		assert_not_null(card, "no empty deck slots")
 
@@ -94,6 +94,6 @@ func test_default_enemy_spawns_are_valid() -> void:
 	for spawn in cfg.enemy_spawns:
 		assert_not_null(spawn.enemy, "spawn has an enemy")
 		assert_true(GridModel.is_in_bounds(spawn.cell), "spawn %s in bounds" % spawn.cell)
-		assert_true(spawn.cell.x >= GridModel.PLAYER_COLUMNS, "spawn %s on enemy side" % spawn.cell)
+		assert_eq(GridModel.default_owner(spawn.cell.x), GridModel.Side.ENEMY, "spawn %s on enemy side" % spawn.cell)
 		assert_false(cells.has(spawn.cell), "spawn %s not shared" % spawn.cell)
 		cells[spawn.cell] = true

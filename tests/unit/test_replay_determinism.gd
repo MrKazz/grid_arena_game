@@ -15,7 +15,7 @@ func _play(rng_seed: int) -> Dictionary:
 	var lob := Fixtures.card(&"lob", 7, CardData.Targeting.AIMED, [])
 	var shot := Fixtures.card(&"shot", 3, CardData.Targeting.ROW_FIRST_HIT, [])
 	var wanderer := state.spawn_enemy(
-			Fixtures.enemy(&"wanderer", EnemyData.Movement.WANDER, lob, 40, 15, 9, 10000), Vector2i(7, 0))
+			Fixtures.enemy(&"wanderer", EnemyData.Movement.WANDER, lob, 40, 15, 9, 10000), Vector2i(6, 0))
 	var tracker := state.spawn_enemy(
 			Fixtures.enemy(&"tracker", EnemyData.Movement.TRACK_ROW, shot, 30, 10, 13, 10000), Vector2i(6, 3))
 	var dirs: Array[Vector2i] = [Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT, Vector2i.UP]
