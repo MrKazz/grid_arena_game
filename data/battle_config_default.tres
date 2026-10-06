@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BattleConfig" load_steps=8 format=3]
+[gd_resource type="Resource" script_class="BattleConfig" format=3]
 
 [ext_resource type="Script" path="res://scripts/core/battle_config.gd" id="1_config"]
 [ext_resource type="Script" path="res://scripts/core/card_data.gd" id="2_card"]
@@ -7,6 +7,19 @@
 [ext_resource type="Resource" path="res://data/cards/wide_slash.tres" id="w"]
 [ext_resource type="Resource" path="res://data/cards/lance.tres" id="l"]
 [ext_resource type="Resource" path="res://data/cards/burst.tres" id="x"]
+[ext_resource type="Script" path="res://scripts/core/enemy_spawn.gd" id="3_spawn"]
+[ext_resource type="Resource" path="res://data/enemies/gunner.tres" id="e_gunner"]
+[ext_resource type="Resource" path="res://data/enemies/lobber.tres" id="e_lobber"]
+
+[sub_resource type="Resource" id="spawn_gunner"]
+script = ExtResource("3_spawn")
+enemy = ExtResource("e_gunner")
+cell = Vector2i(6, 1)
+
+[sub_resource type="Resource" id="spawn_lobber"]
+script = ExtResource("3_spawn")
+enemy = ExtResource("e_lobber")
+cell = Vector2i(5, 3)
 
 [resource]
 script = ExtResource("1_config")
@@ -21,4 +34,5 @@ starter_deck = Array[ExtResource("2_card")]([ExtResource("b"), ExtResource("b"),
 player_max_hp = 100
 player_start_cell = Vector2i(1, 1)
 basic_attack_damage = 5
+enemy_spawns = Array[ExtResource("3_spawn")]([SubResource("spawn_gunner"), SubResource("spawn_lobber")])
 rng_seed = 0

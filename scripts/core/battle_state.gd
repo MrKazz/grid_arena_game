@@ -17,6 +17,8 @@ var deck: Deck
 var gauge: PlanGauge
 var player: Combatant
 var enemies: Array[Combatant] = []
+## AI for enemies added with spawn_enemy(); enemies added with add_enemy() have none.
+var brains: Array[EnemyBrain] = []
 var phase := Phase.PLANNING
 var tick_count := 0
 var rng_seed: int
@@ -27,6 +29,8 @@ var reshuffles_left: int
 var winner := -1
 
 var _basic_attack: CardData
+## Separate stream from the deck's so enemy behaviour changes don't reshuffle draws.
+var _enemy_rng := RandomNumberGenerator.new()
 var _move_cooldown := 0
 var _attack_cooldown := 0
 
@@ -48,6 +52,11 @@ func _init(p_config: BattleConfig) -> void:
 	var placed := grid.place(player, config.player_start_cell)
 	assert(placed, "player_start_cell must be an empty player-side tile")
 
+	_enemy_rng.seed = hash(rng_seed) ^ 0x5bd1e995
+	for spawn in config.enemy_spawns:
+		var spawned := spawn_enemy(spawn.enemy, spawn.cell)
+		assert(spawned != null, "enemy spawn at %s must be an empty enemy-side tile" % spawn.cell)
+
 	# Battles open in the planning phase with a full hand.
 	deck.fill_hand()
 
@@ -59,6 +68,16 @@ func add_enemy(enemy: Combatant, cell: Vector2i) -> bool:
 	return true
 
 
+## Places an AI-driven enemy. Returns its brain, or null if the tile is invalid.
+func spawn_enemy(data: EnemyData, cell: Vector2i) -> EnemyBrain:
+	var enemy := Combatant.new(data.id, GridModel.Side.ENEMY, data.max_hp)
+	if not add_enemy(enemy, cell):
+		return null
+	var brain := EnemyBrain.new(data, enemy)
+	brains.append(brain)
+	return brain
+
+
 ## Advances the simulation by one fixed tick. No-op unless ACTIVE.
 func step() -> void:
 	if phase != Phase.ACTIVE:
@@ -67,6 +86,10 @@ func step() -> void:
 	gauge.tick()
 	_move_cooldown = maxi(0, _move_cooldown - 1)
 	_attack_cooldown = maxi(0, _attack_cooldown - 1)
+	for brain in brains:
+		if phase != Phase.ACTIVE:
+			break
+		brain.step(self, _enemy_rng)
 
 
 func try_move(direction: Vector2i) -> bool:
@@ -139,8 +162,13 @@ func living_enemies() -> Array[Combatant]:
 
 
 func _use(user: Combatant, card: CardData) -> Array[Combatant]:
-	var cells := CardResolver.target_cells(card, user, grid)
-	var hits := CardResolver.apply(card, user, grid)
+	return resolve_attack(user, card, CardResolver.target_cells(card, user, grid))
+
+
+## Applies `card` from `user` to `cells`, removes the dead, emits card_used,
+## and checks for the end of the battle. Used by the player and EnemyBrain.
+func resolve_attack(user: Combatant, card: CardData, cells: Array[Vector2i]) -> Array[Combatant]:
+	var hits := CardResolver.apply_to_cells(card, user, grid, cells)
 	for hit in hits:
 		if not hit.is_alive():
 			grid.remove(hit)

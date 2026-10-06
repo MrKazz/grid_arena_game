@@ -11,6 +11,7 @@ const ENEMY_TILE := Color("b6453d")
 const PLAYER_UNIT := Color("8fd3ff")
 const ENEMY_UNIT := Color("ffb08f")
 const FLASH := Color(1, 1, 0.6, 0.7)
+const WARNING := Color(1, 0.6, 0.1)
 
 var state: BattleState:
 	set(value):
@@ -38,12 +39,21 @@ func _draw() -> void:
 	if state == null:
 		return
 	var font := ThemeDB.fallback_font
+	var warnings := {}  # Vector2i -> wind-up progress 0..1
+	for brain in state.brains:
+		for cell in brain.telegraph:
+			warnings[cell] = maxf(warnings.get(cell, 0.0), brain.windup_progress())
 	for y in GridModel.ROWS:
 		for x in GridModel.COLUMNS:
 			var cell := Vector2i(x, y)
 			var rect := cell_rect(cell)
 			var is_player_tile := state.grid.owner_of(cell) == GridModel.Side.PLAYER
 			draw_rect(rect, PLAYER_TILE if is_player_tile else ENEMY_TILE)
+			if warnings.has(cell):
+				var warn := WARNING
+				warn.a = lerpf(0.25, 0.8, warnings[cell])
+				draw_rect(rect, warn)
+				draw_rect(rect.grow(-1), WARNING, false, 2.0)
 			if _flashes.has(cell):
 				draw_rect(rect, FLASH)
 			var unit := state.grid.occupant_at(cell)

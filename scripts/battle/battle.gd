@@ -24,7 +24,6 @@ func _ready() -> void:
 		config = BattleConfig.new()
 	Engine.physics_ticks_per_second = config.ticks_per_second
 	state = BattleState.new(config)
-	state.add_enemy(Combatant.new(&"training_dummy", GridModel.Side.ENEMY, 200), Vector2i(5, 1))
 	grid_view.state = state
 	print("Battle started with seed %d" % state.rng_seed)
 

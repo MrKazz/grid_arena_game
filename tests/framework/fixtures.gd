@@ -29,7 +29,23 @@ static func ids(cards_in: Array[CardData]) -> Array[StringName]:
 	return result
 
 
-## Fast, deterministic config: 1s gauge at 60 ticks, fixed seed, 12-card deck.
+## Enemy with explicit timings. `attack` may be null for a non-attacker.
+static func enemy(id: StringName, movement: EnemyData.Movement = EnemyData.Movement.STATIONARY,
+		attack: CardData = null, attack_cooldown_ticks: int = 10, attack_windup_ticks: int = 5,
+		move_interval_ticks: int = 10, max_hp: int = 100) -> EnemyData:
+	var e := EnemyData.new()
+	e.id = id
+	e.display_name = String(id)
+	e.max_hp = max_hp
+	e.movement = movement
+	e.move_interval_ticks = move_interval_ticks
+	e.attack = attack
+	e.attack_cooldown_ticks = attack_cooldown_ticks
+	e.attack_windup_ticks = attack_windup_ticks
+	return e
+
+
+## Fast, deterministic config (no enemies): 1s gauge at 60 ticks, fixed seed, 12-card deck.
 static func config(rng_seed: int = 1234) -> BattleConfig:
 	var cfg := BattleConfig.new()
 	cfg.ticks_per_second = 60

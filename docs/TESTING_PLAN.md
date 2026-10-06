@@ -22,8 +22,9 @@ going red.
 | Layer | Location | What it covers | Speed | Status |
 |---|---|---|---|---|
 | Unit: rules | `tests/unit/test_grid_model.gd`, `test_deck.gd`, `test_plan_gauge.gd`, `test_card_resolver.gd`, `test_battle_state.gd` | Grid bounds and ownership, movement, deck draw/discard/recycle/reshuffle, card conservation, targeting and mirroring, damage, plan/confirm validation, gauge, cooldowns, win/lose | ms | ✅ in place |
-| Determinism / replay | `tests/unit/test_replay_determinism.gd` | Same seed + same scripted inputs → identical state | ms | ✅ in place |
-| Data validation | `tests/unit/test_game_data.gd` | Every card loads, has a unique id matching its file name, damage > 0, a pattern if tile-targeted; default config is internally consistent | ms | ✅ in place |
+| Unit: enemy AI | `tests/unit/test_enemy_brain.gd` | Movement styles and intervals, staying on the enemy side, per-seed determinism, cooldown → telegraph → hit timing, dodging aimed and projectile attacks, no movement during wind-up, alignment gating, enemy kills end the battle, dead enemies cancel attacks, frozen while planning, spawning from config | ms | ✅ in place |
+| Determinism / replay | `tests/unit/test_replay_determinism.gd` | Same seed + same scripted inputs → identical state, including wandering/tracking enemies and their hits | ms | ✅ in place |
+| Data validation | `tests/unit/test_game_data.gd` | Every card, enemy attack and enemy loads, has an id matching its file name and sane numbers; enemies with attacks have a wind-up; default spawns are in bounds, on the enemy side and not stacked; default config is internally consistent | ms | ✅ in place |
 | Scene smoke / integration | `tests/integration/test_battle_scene.gd` | Main scene boots, input actions exist, real InputMap actions drive plan → move → attack | ~1 s | ✅ in place |
 | Golden replays | `tests/replays/*.json` (planned) | Recorded input logs from real play sessions replayed headless; final state compared to a stored snapshot | s | 🔜 next |
 | Balance simulations | `tools/simulate.gd` (planned) | Thousands of seeded bot-vs-bot or bot-vs-dummy battles; report win rate, time-to-kill, card usage; flag regressions beyond a threshold | min | 🔜 later |
@@ -46,7 +47,8 @@ The script:
 4. **fails if the engine logged any script error.** GDScript has no
    exceptions: a null access inside a test logs an error and carries on, so
    the runner alone would report PASS. This log scan is what turns those into
-   failures. Don't remove it.
+   failures. Don't remove it. It also fails on leaked objects or resources
+   at exit, which almost always means a reference cycle.
 
 Windows: run it from Git Bash with `GODOT_BIN` pointing at the `.exe`, or run
 the two `godot` commands in the script by hand.
@@ -76,8 +78,10 @@ the two `godot` commands in the script by hand.
 3. **Randomised (fuzz) tests:** run thousands of random-but-seeded input
    sequences and assert the invariants hold. Print the failing seed so it can
    be turned into a golden replay.
-4. **Enemy AI tests** once enemies act: given a field state, the AI picks the
-   expected move or attack, and AI decisions use only the seeded RNG.
+4. **Enemy behaviour scenarios** as the roster grows: one table-driven test
+   per enemy type that loads its real `.tres` and checks its signature
+   behaviour (for example, "the gunner fires within N ticks of aligning").
+   The basic AI tests are already in place.
 5. **Balance simulation report** in CI as a non-blocking job that posts
    the numbers as an artifact. Make it blocking only for agreed thresholds,
    e.g. no card deals more than X% of total damage.
@@ -94,6 +98,8 @@ the two `godot` commands in the script by hand.
 - [ ] Selected cards queue in selection order; the HUD shows the queue.
 - [ ] Reshuffle works only while planning and respects the per-battle limit.
 - [ ] Hit tiles flash where expected for each card (including the row projectile).
+- [ ] Enemy wind-ups are readable: the warning tiles appear early enough to react, and dodging works.
+- [ ] Enemies never stand on player tiles or overlap; the Gunner follows your row.
 - [ ] The battle ends correctly on a win or a loss; no input is accepted afterwards.
 - [ ] The godot MCP debug output shows no errors or warnings during a full battle.
 

@@ -20,6 +20,8 @@ extends Resource
 @export var player_max_hp: int = 100
 @export var player_start_cell := Vector2i(1, 1)
 @export var basic_attack_damage: int = 5
+## Enemies placed at battle start, stepped in this order every tick.
+@export var enemy_spawns: Array[EnemySpawn] = []
 
 @export_group("Randomness")
 ## Seed for deck shuffles. 0 = pick a random seed at battle start.

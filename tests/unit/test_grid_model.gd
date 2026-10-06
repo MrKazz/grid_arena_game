@@ -73,3 +73,28 @@ func test_first_opponent_in_row_skips_allies_and_other_rows() -> void:
 	assert_eq(grid.first_opponent_in_row(me.cell, me.side), target)
 	assert_eq(grid.first_opponent_in_row(target.cell, target.side), ally)
 	assert_null(grid.first_opponent_in_row(Vector2i(0, 3), GridModel.Side.PLAYER))
+
+
+func test_nearest_opponent_by_distance_then_row_then_column() -> void:
+	var me := Combatant.new(&"me", GridModel.Side.ENEMY, 10)
+	var a := Combatant.new(&"a", GridModel.Side.PLAYER, 10)
+	var b := Combatant.new(&"b", GridModel.Side.PLAYER, 10)
+	var far := Combatant.new(&"far", GridModel.Side.PLAYER, 10)
+	grid.place(me, Vector2i(4, 1))
+	grid.place(far, Vector2i(0, 3))
+	assert_eq(grid.nearest_opponent(me.cell, me.side), far)
+	grid.place(a, Vector2i(3, 2))
+	grid.place(b, Vector2i(3, 0))
+	assert_eq(grid.nearest_opponent(me.cell, me.side), b, "tie broken by lower row")
+	b.take_damage(10)
+	assert_eq(grid.nearest_opponent(me.cell, me.side), a, "ignores the dead")
+	assert_null(GridModel.new().nearest_opponent(Vector2i(0, 0), GridModel.Side.PLAYER), "empty field")
+
+
+func test_open_neighbours() -> void:
+	var me := Combatant.new(&"me", GridModel.Side.ENEMY, 10)
+	var blocker := Combatant.new(&"blocker", GridModel.Side.ENEMY, 10)
+	grid.place(me, Vector2i(4, 0))
+	grid.place(blocker, Vector2i(5, 0))
+	assert_eq(grid.open_neighbours(me.cell, me.side), [Vector2i(4, 1)],
+			"not off-grid, not across the border, not occupied")

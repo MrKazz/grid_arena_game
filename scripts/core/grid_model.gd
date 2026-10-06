@@ -95,5 +95,31 @@ func first_opponent_in_row(from: Vector2i, side: int) -> Combatant:
 	return null
 
 
+## Closest living opposing combatant by grid distance (Manhattan). Ties go to
+## the lowest row, then the lowest column, so the result is deterministic.
+func nearest_opponent(from: Vector2i, side: int) -> Combatant:
+	var best: Combatant = null
+	var best_key := Vector3i.MAX
+	for cell: Vector2i in _occupants:
+		var other: Combatant = _occupants[cell]
+		if other.side == side or not other.is_alive():
+			continue
+		var distance := absi(cell.x - from.x) + absi(cell.y - from.y)
+		var key := Vector3i(distance, cell.y, cell.x)
+		if key < best_key:
+			best_key = key
+			best = other
+	return best
+
+
+## Unoccupied neighbouring tiles (up, down, left, right) that `side` may enter.
+func open_neighbours(cell: Vector2i, side: int) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	for dir: Vector2i in [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]:
+		if can_enter(side, cell + dir):
+			result.append(cell + dir)
+	return result
+
+
 func _index(cell: Vector2i) -> int:
 	return cell.y * COLUMNS + cell.x
