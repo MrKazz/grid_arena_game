@@ -5,7 +5,7 @@ extends TestCase
 const SCRIPT_LENGTH := 600
 
 
-## A fixed, varied input script: moves, attacks, card use, planning, reshuffles.
+## A fixed, varied input script: moves, attacks, card use, Focus, reshuffles.
 func _play(rng_seed: int) -> Dictionary:
 	var cfg := Fixtures.config(rng_seed)
 	cfg.player_max_hp = 10000
@@ -20,17 +20,17 @@ func _play(rng_seed: int) -> Dictionary:
 			Fixtures.enemy(&"tracker", EnemyData.Movement.TRACK_ROW, shot, 30, 10, 13, 10000), Vector2i(6, 3))
 	var dirs: Array[Vector2i] = [Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT, Vector2i.UP]
 	state.reshuffle()
-	state.confirm_plan([0, 2])
+	state.confirm_focus([0, 2])
 	for t in SCRIPT_LENGTH:
-		if state.phase == BattleState.Phase.PLANNING:
-			state.confirm_plan([1, 0])
+		if state.phase == BattleState.Phase.FOCUS:
+			state.confirm_focus([1, 0])
 		if t % 7 == 0:
 			state.try_move(dirs[(t / 7) % dirs.size()])
 		if t % 11 == 0:
 			state.try_basic_attack()
 		if t % 37 == 0:
 			state.try_use_card()
-		state.open_plan()
+		state.open_focus()
 		state.step()
 	return {
 		"tick": state.tick_count,

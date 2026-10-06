@@ -1,6 +1,6 @@
-class_name PlanGauge
+class_name FocusGauge
 extends RefCounted
-## Fills one step per simulation tick. When full, the player may pause to plan.
+## Fills one step per simulation tick. When full, the player may enter Focus (combat pauses to pick cards).
 
 var fill_ticks: int
 var ticks := 0

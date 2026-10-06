@@ -6,7 +6,7 @@ var state: BattleState
 
 func before_each() -> void:
 	state = BattleState.new(Fixtures.config())
-	state.confirm_plan([])
+	state.confirm_focus([])
 
 
 func _step(ticks: int) -> void:
@@ -64,7 +64,7 @@ func test_wander_stays_on_enemy_or_neutral_tiles() -> void:
 
 func _wander_path(rng_seed: int) -> Array[Vector2i]:
 	var s := BattleState.new(Fixtures.config(rng_seed))
-	s.confirm_plan([])
+	s.confirm_focus([])
 	var brain := s.spawn_enemy(Fixtures.enemy(&"w", EnemyData.Movement.WANDER, null, 10, 5, 1), Vector2i(5, 1))
 	var path: Array[Vector2i] = []
 	for i in 50:
@@ -163,7 +163,7 @@ func test_enemy_attack_can_end_battle() -> void:
 	assert_eq(state.tick_count, ticks)
 
 
-func test_enemies_frozen_while_planning() -> void:
+func test_enemies_frozen_during_focus() -> void:
 	var s := BattleState.new(Fixtures.config())
 	var brain := s.spawn_enemy(Fixtures.enemy(&"lobber", EnemyData.Movement.WANDER, _lob(), 1, 1, 1), Vector2i(5, 1))
 	for i in 100:

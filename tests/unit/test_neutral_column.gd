@@ -62,7 +62,7 @@ func test_neutral_is_not_a_bridge_to_the_other_side() -> void:
 
 func _active_state() -> BattleState:
 	var state := BattleState.new(Fixtures.config())
-	state.confirm_plan([])
+	state.confirm_focus([])
 	return state
 
 
