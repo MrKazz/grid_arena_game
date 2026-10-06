@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Runs the test suite before each commit when game files are staged.
+# Install once with:  git config core.hooksPath tools/git-hooks
+# Skip in an emergency with:  git commit --no-verify
+if ! git diff --cached --name-only | grep -qE '\.(gd|tscn|tres|godot|cfg)$'; then
+  exit 0
+fi
+echo "pre-commit: running Godot tests..."
+"$(git rev-parse --show-toplevel)/tools/run_tests.sh" >/tmp/grid_arena_precommit.log 2>&1
+status=$?
+if [[ $status -eq 127 ]]; then
+  echo "pre-commit: Godot not found (set GODOT_BIN); skipping tests." >&2
+  exit 0
+elif [[ $status -ne 0 ]]; then
+  grep -E "FAIL|ERROR|failed" /tmp/grid_arena_precommit.log >&2
+  echo "pre-commit: tests failed; commit aborted. Full log: /tmp/grid_arena_precommit.log" >&2
+  exit 1
+fi
+tail -n 1 /tmp/grid_arena_precommit.log
