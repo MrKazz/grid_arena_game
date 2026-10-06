@@ -67,21 +67,26 @@ func test_confirm_then_move_and_attack_via_input() -> void:
 
 func test_enemies_act_in_the_real_scene() -> void:
 	var state: BattleState = battle.state
-	var start: Array[Vector2i] = []
+	var last: Array[Vector2i] = []
 	for enemy in state.enemies:
-		start.append(enemy.cell)
+		last.append(enemy.cell)
 	var enemy_attacks := []
 	state.card_used.connect(func(user: Combatant, card: CardData, _c, _h) -> void:
 		if user.side == GridModel.Side.ENEMY:
 			enemy_attacks.append(card.id))
 	state.confirm_plan([])
 	# Step the state directly (not via frames) so the test stays fast.
+	# Check for movement on every tick: the scene uses a random seed, and a
+	# wandering enemy often ends up back on its starting tile, so comparing
+	# only start and end positions fails for about 1 seed in 5.
+	var moves := 0
 	for i in 600:
 		state.step()
 		if state.phase == BattleState.Phase.PLANNING:
 			state.confirm_plan([])
-	var moved := false
-	for i in state.enemies.size():
-		moved = moved or state.enemies[i].cell != start[i]
-	assert_true(moved, "some enemy moved within 10 s")
+		for k in state.enemies.size():
+			if state.enemies[k].cell != last[k]:
+				moves += 1
+				last[k] = state.enemies[k].cell
+	assert_true(moves > 0, "some enemy moved within 10 s")
 	assert_false(enemy_attacks.is_empty(), "some enemy attacked within 10 s")

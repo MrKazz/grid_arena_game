@@ -90,6 +90,11 @@ move the hand cursor and `use_card` toggles a card's selection.
 - Tests are `extends TestCase`, files `test_*.gd`, methods `test_*`. Use
   `Fixtures` (`config()`, `card()`, `enemy()`) instead of depending on
   tuned values in `res://data`.
+- Integration tests run the real scene with a **random seed** (it's printed
+  as "Battle started with seed N"). Their assertions must hold for every
+  seed: check "did X ever happen", not "is the end state different", because
+  random movement can return to where it started. To debug a CI failure,
+  replay the logged seed through `BattleState`.
 - GDScript lambdas capture locals **by value**: collect results into an
   Array, not a bool. Don't capture an object inside a lambda connected to
   that object's own signal: it creates a reference cycle, and the runner
