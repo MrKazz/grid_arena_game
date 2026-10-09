@@ -42,17 +42,17 @@ move_right={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"physical_keycode":68), Object(InputEventKey,"physical_keycode":4194321)]
 }
-basic_attack={
+button_a={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"physical_keycode":74)]
+"events": [Object(InputEventKey,"physical_keycode":46), Object(InputEventKey,"physical_keycode":4194436)]
 }
-use_card={
+button_b={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"physical_keycode":75)]
+"events": [Object(InputEventKey,"physical_keycode":48), Object(InputEventKey,"physical_keycode":4194438)]
 }
-open_plan={
+open_focus={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"physical_keycode":32), Object(InputEventKey,"physical_keycode":4194309)]
+"events": [Object(InputEventKey,"physical_keycode":32), Object(InputEventKey,"physical_keycode":4194309), Object(InputEventKey,"physical_keycode":4194310)]
 }
 reshuffle={
 "deadzone": 0.2,

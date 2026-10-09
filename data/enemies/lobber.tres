@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/enemy_data.gd" id="1_enemy"]
+[ext_resource type="Resource" path="res://data/enemy_attacks/enemy_lob.tres" id="2_attack"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"lobber"
+display_name = "Lobber"
+max_hp = 120
+movement = 1
+move_interval_ticks = 50
+attack = ExtResource("2_attack")
+attack_cooldown_ticks = 150
+attack_windup_ticks = 45
+attack_requires_alignment = false

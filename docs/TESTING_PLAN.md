@@ -21,10 +21,13 @@ going red.
 
 | Layer | Location | What it covers | Speed | Status |
 |---|---|---|---|---|
-| Unit: rules | `tests/unit/test_grid_model.gd`, `test_deck.gd`, `test_plan_gauge.gd`, `test_card_resolver.gd`, `test_battle_state.gd` | Grid bounds and ownership, movement, deck draw/discard/recycle/reshuffle, card conservation, targeting and mirroring, damage, plan/confirm validation, gauge, cooldowns, win/lose | ms | ✅ in place |
-| Determinism / replay | `tests/unit/test_replay_determinism.gd` | Same seed + same scripted inputs → identical state | ms | ✅ in place |
-| Data validation | `tests/unit/test_game_data.gd` | Every card loads, has a unique id matching its file name, damage > 0, a pattern if tile-targeted; default config is internally consistent | ms | ✅ in place |
-| Scene smoke / integration | `tests/integration/test_battle_scene.gd` | Main scene boots, input actions exist, real InputMap actions drive plan → move → attack | ~1 s | ✅ in place |
+| Unit: rules | `tests/unit/test_grid_model.gd`, `test_deck.gd`, `test_focus_gauge.gd`, `test_card_resolver.gd`, `test_battle_state.gd` | Grid bounds and ownership, movement, deck draw/discard/recycle/reshuffle, card conservation, targeting and mirroring, damage, Focus confirm validation, gauge, cooldowns, win/lose | ms | ✅ in place |
+| Unit: neutral column | `tests/unit/test_neutral_column.gd` | Middle column is neutral; both sides can enter it but not cross it; one occupant per tile for everyone; a tile frees when its occupant moves off or dies; wandering enemies route around an occupied neutral tile; attacks reach into and out of it | ms | ✅ in place |
+| Unit: enemy AI | `tests/unit/test_enemy_brain.gd` | Movement styles and intervals, staying on the enemy side, per-seed determinism, cooldown → telegraph → hit timing, dodging aimed and projectile attacks, no movement during wind-up, alignment gating, enemy kills end the battle, dead enemies cancel attacks, frozen during Focus, spawning from config | ms | ✅ in place |
+| Determinism / replay | `tests/unit/test_replay_determinism.gd` | Same seed + same scripted inputs → identical state, including wandering/tracking enemies and their hits | ms | ✅ in place |
+| Data validation | `tests/unit/test_game_data.gd` | Every card, enemy attack and enemy loads, has an id matching its file name and sane numbers; enemies with attacks have a wind-up; default spawns are in bounds, on the enemy side and not stacked; default config is internally consistent | ms | ✅ in place |
+| Unit: Focus menu | `tests/unit/test_focus_menu.gd` | Cursor movement and wrapping, card and button rows, picks ranked in selection order, unpick re-ranks, pick limit, auto-jump to OK when full, B undoes the last pick, button results | ms | ✅ in place |
+| Scene smoke / integration | `tests/integration/test_battle_scene.gd` | Main scene boots into the Focus screen; A/confirm bound to `.` and B/cancel to `0` (plus numpad); Focus UI never covers or dims the field; key hints at the bottom and tracking the phase; picking via real input shows the ranked queue and OK resumes with that order; the Next widget advances and empties; B undoes in Focus and attacks in battle; the Reshuffle button; enemies act | ~1.5 s | ✅ in place |
 | Golden replays | `tests/replays/*.json` (planned) | Recorded input logs from real play sessions replayed headless; final state compared to a stored snapshot | s | 🔜 next |
 | Balance simulations | `tools/simulate.gd` (planned) | Thousands of seeded bot-vs-bot or bot-vs-dummy battles; report win rate, time-to-kill, card usage; flag regressions beyond a threshold | min | 🔜 later |
 | Visual snapshots | (planned) | Render key scenes under `xvfb-run` and diff screenshots against approved images | s | 🔜 once art exists |
@@ -46,7 +49,8 @@ The script:
 4. **fails if the engine logged any script error.** GDScript has no
    exceptions: a null access inside a test logs an error and carries on, so
    the runner alone would report PASS. This log scan is what turns those into
-   failures. Don't remove it.
+   failures. Don't remove it. It also fails on leaked objects or resources
+   at exit, which almost always means a reference cycle.
 
 Windows: run it from Git Bash with `GODOT_BIN` pointing at the `.exe`, or run
 the two `godot` commands in the script by hand.
@@ -76,8 +80,10 @@ the two `godot` commands in the script by hand.
 3. **Randomised (fuzz) tests:** run thousands of random-but-seeded input
    sequences and assert the invariants hold. Print the failing seed so it can
    be turned into a golden replay.
-4. **Enemy AI tests** once enemies act: given a field state, the AI picks the
-   expected move or attack, and AI decisions use only the seeded RNG.
+4. **Enemy behaviour scenarios** as the roster grows: one table-driven test
+   per enemy type that loads its real `.tres` and checks its signature
+   behaviour (for example, "the gunner fires within N ticks of aligning").
+   The basic AI tests are already in place.
 5. **Balance simulation report** in CI as a non-blocking job that posts
    the numbers as an artifact. Make it blocking only for agreed thresholds,
    e.g. no card deals more than X% of total damage.
@@ -88,12 +94,18 @@ the two `godot` commands in the script by hand.
 ## 6. Manual playtest checklist (per design change)
 
 - [ ] Movement feels responsive; holding a direction repeats at the intended rate.
-- [ ] Can't walk onto the enemy half or into occupied tiles.
-- [ ] Battle opens in planning with a full hand; confirming with nothing selected works.
-- [ ] The gauge fills in the expected time; planning can't open early.
-- [ ] Selected cards queue in selection order; the HUD shows the queue.
-- [ ] Reshuffle works only while planning and respects the per-battle limit.
+- [ ] Can't walk onto enemy tiles or into occupied tiles. Can walk into the gray column, unless an enemy is standing on that tile.
+- [ ] Enemies use the gray column too, and never step onto a gray tile you're standing on.
+- [ ] Battle opens in Focus with a full hand; confirming with nothing selected works.
+- [ ] The gauge fills in the expected time; Focus can't open early.
+- [ ] Focus screen: picked cards show their rank badge, the queue lists them in trigger order, and the details panel follows the cursor.
+- [ ] `.` confirms (pick, OK, use card) and `0` cancels (undo pick, basic attack), on both the main row and the numpad; the hint bar matches.
+- [ ] During Focus the whole field (units, HP, enemy warnings) stays clearly visible.
+- [ ] Selected cards trigger in pick order; the Next widget shows the upcoming card and reads "Empty" when the queue runs out.
+- [ ] Reshuffle works only in Focus and respects the per-battle limit.
 - [ ] Hit tiles flash where expected for each card (including the row projectile).
+- [ ] Enemy wind-ups are readable: the warning tiles appear early enough to react, and dodging works.
+- [ ] Enemies never stand on player tiles or overlap; the Gunner follows your row.
 - [ ] The battle ends correctly on a win or a loss; no input is accepted afterwards.
 - [ ] The godot MCP debug output shows no errors or warnings during a full battle.
 

@@ -62,3 +62,31 @@ func test_damage_does_not_go_below_zero() -> void:
 	CardResolver.apply(card, player, grid)
 	assert_eq(enemy.hp, 0)
 	assert_false(enemy.is_alive())
+
+
+func test_aimed_targets_nearest_opponent() -> void:
+	var far := Combatant.new(&"far", GridModel.Side.ENEMY, 100)
+	grid.place(far, Vector2i(6, 3))
+	var card := Fixtures.card(&"lob", 20, CardData.Targeting.AIMED, [])
+	assert_eq(CardResolver.target_cells(card, player, grid), [Vector2i(5, 1)])
+	assert_eq(CardResolver.target_cells(card, enemy, grid), [Vector2i(2, 1)])
+
+
+func test_telegraph_for_projectile_covers_row_ahead() -> void:
+	var card := Fixtures.card(&"bolt", 40, CardData.Targeting.ROW_FIRST_HIT, [])
+	assert_eq(CardResolver.telegraph_cells(card, enemy, grid),
+			[Vector2i(4, 1), Vector2i(3, 1), Vector2i(2, 1), Vector2i(1, 1), Vector2i(0, 1)])
+	assert_eq(CardResolver.telegraph_cells(card, player, grid),
+			[Vector2i(3, 1), Vector2i(4, 1), Vector2i(5, 1), Vector2i(6, 1)])
+
+
+func test_telegraph_for_tiles_matches_targets() -> void:
+	var card := Fixtures.card(&"c", 10, CardData.Targeting.TILES, [Vector2i(1, 0), Vector2i(2, 1)])
+	assert_eq(CardResolver.telegraph_cells(card, enemy, grid), CardResolver.target_cells(card, enemy, grid))
+
+
+func test_apply_to_cells_uses_given_cells_only() -> void:
+	var card := Fixtures.card(&"c", 30, CardData.Targeting.AIMED, [])
+	assert_eq(CardResolver.apply_to_cells(card, player, grid, [Vector2i(5, 2)]).size(), 0)
+	assert_eq(CardResolver.apply_to_cells(card, player, grid, [Vector2i(5, 1)]), [enemy])
+	assert_eq(enemy.hp, 70)
