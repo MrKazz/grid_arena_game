@@ -44,11 +44,11 @@ move_right={
 }
 button_a={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"physical_keycode":48), Object(InputEventKey,"physical_keycode":4194438)]
+"events": [Object(InputEventKey,"physical_keycode":46), Object(InputEventKey,"physical_keycode":4194436)]
 }
 button_b={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"physical_keycode":46), Object(InputEventKey,"physical_keycode":4194436)]
+"events": [Object(InputEventKey,"physical_keycode":48), Object(InputEventKey,"physical_keycode":4194438)]
 }
 open_focus={
 "deadzone": 0.2,

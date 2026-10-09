@@ -24,7 +24,7 @@ func _draw() -> void:
 	var rect := Rect2(Vector2.ZERO, size)
 	var c := displayed_card()
 	CardArt.panel(self, rect, CardArt.BORDER if c == null else CardArt.type_color(c))
-	draw_string(f, Vector2(8, 14), "NEXT  [0]", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CardArt.TEXT_DIM)
+	draw_string(f, Vector2(8, 14), "NEXT  [.]", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CardArt.TEXT_DIM)
 	if c == null:
 		draw_string(f, Vector2(8, 34), "Empty", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, CardArt.TEXT_DIM)
 		draw_string(f, Vector2(8, 50), "Refill in Focus", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, CardArt.TEXT_DIM)

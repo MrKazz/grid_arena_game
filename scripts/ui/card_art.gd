@@ -58,7 +58,8 @@ static func card(canvas: CanvasItem, rect: Rect2, c: CardData, highlighted: bool
 		canvas.draw_rect(rect, Color(0, 0, 0, 0.45))
 	canvas.draw_rect(rect, HIGHLIGHT if highlighted else BORDER, false, 2.0 if highlighted else 1.0)
 	if rank > 0:
-		var badge := Rect2(rect.end - Vector2(18, rect.size.y - 10), Vector2(16, 16))
+		# Beside the damage number, so it never covers the name.
+		var badge := Rect2(Vector2(rect.end.x - 20, rect.position.y + 23), Vector2(16, 16))
 		canvas.draw_rect(badge, HIGHLIGHT)
 		canvas.draw_string(f, badge.position + Vector2(4, 13), str(rank),
 				HORIZONTAL_ALIGNMENT_LEFT, -1, 12, BG)
