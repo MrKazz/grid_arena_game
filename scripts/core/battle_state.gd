@@ -3,10 +3,10 @@ extends RefCounted
 ## The whole battle simulation, independent of nodes and rendering.
 ##
 ## Drive it by calling step() once per fixed tick while ACTIVE, plus the
-## try_*/plan methods in response to input. Same seed + same calls in the
+## try_*/focus methods in response to input. Same seed + same calls in the
 ## same order = same result, which is what the replay tests rely on.
 
-enum Phase { PLANNING, ACTIVE, ENDED }
+enum Phase { FOCUS, ACTIVE, ENDED }
 
 signal phase_changed(phase: Phase)
 signal card_used(user: Combatant, card: CardData, cells: Array[Vector2i], hits: Array[Combatant])
@@ -14,15 +14,15 @@ signal card_used(user: Combatant, card: CardData, cells: Array[Vector2i], hits: 
 var config: BattleConfig
 var grid := GridModel.new()
 var deck: Deck
-var gauge: PlanGauge
+var gauge: FocusGauge
 var player: Combatant
 var enemies: Array[Combatant] = []
 ## AI for enemies added with spawn_enemy(); enemies added with add_enemy() have none.
 var brains: Array[EnemyBrain] = []
-var phase := Phase.PLANNING
+var phase := Phase.FOCUS
 var tick_count := 0
 var rng_seed: int
-## Cards chosen during planning, used front-first with try_use_card().
+## Cards chosen during Focus, used front-first with try_use_card().
 var queued_cards: Array[CardData] = []
 var reshuffles_left: int
 ## GridModel.Side of the winner once ENDED, otherwise -1.
@@ -39,7 +39,7 @@ func _init(p_config: BattleConfig) -> void:
 	config = p_config
 	rng_seed = config.rng_seed if config.rng_seed != 0 else randi()
 	deck = Deck.new(config.starter_deck, config.hand_size, rng_seed)
-	gauge = PlanGauge.new(config.plan_gauge_ticks())
+	gauge = FocusGauge.new(config.focus_gauge_ticks())
 	reshuffles_left = config.reshuffles_per_battle
 
 	_basic_attack = CardData.new()
@@ -57,7 +57,7 @@ func _init(p_config: BattleConfig) -> void:
 		var spawned := spawn_enemy(spawn.enemy, spawn.cell)
 		assert(spawned != null, "enemy spawn at %s must be an empty enemy-side tile" % spawn.cell)
 
-	# Battles open in the planning phase with a full hand.
+	# Battles open in Focus with a full hand.
 	deck.fill_hand()
 
 
@@ -116,23 +116,23 @@ func try_use_card() -> Array[Combatant]:
 	return _use(player, card)
 
 
-func can_open_plan() -> bool:
+func can_open_focus() -> bool:
 	return phase == Phase.ACTIVE and gauge.is_full()
 
 
 ## Pauses combat and tops the hand back up.
-func open_plan() -> bool:
-	if not can_open_plan():
+func open_focus() -> bool:
+	if not can_open_focus():
 		return false
 	deck.fill_hand()
-	_set_phase(Phase.PLANNING)
+	_set_phase(Phase.FOCUS)
 	return true
 
 
 ## Queues the chosen hand cards (in the given order) and resumes combat.
 ## Fails without changing anything if the selection is invalid.
-func confirm_plan(hand_indices: Array[int]) -> bool:
-	if phase != Phase.PLANNING or hand_indices.size() > config.max_cards_per_plan:
+func confirm_focus(hand_indices: Array[int]) -> bool:
+	if phase != Phase.FOCUS or hand_indices.size() > config.max_cards_per_focus:
 		return false
 	var taken := deck.take_from_hand(hand_indices)
 	if taken.size() != hand_indices.size():
@@ -143,9 +143,9 @@ func confirm_plan(hand_indices: Array[int]) -> bool:
 	return true
 
 
-## Swaps the current hand for a fresh draw. Only while planning.
+## Swaps the current hand for a fresh draw. Only during Focus.
 func reshuffle() -> bool:
-	if phase != Phase.PLANNING or reshuffles_left == 0:
+	if phase != Phase.FOCUS or reshuffles_left == 0:
 		return false
 	deck.reshuffle_hand()
 	if reshuffles_left > 0:

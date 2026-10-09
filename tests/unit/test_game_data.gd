@@ -42,8 +42,8 @@ func test_default_config_is_sane() -> void:
 	assert_not_null(cfg)
 	assert_eq(cfg.starter_deck.size(), 16)
 	assert_true(cfg.starter_deck.size() >= cfg.hand_size, "deck can fill a hand")
-	assert_true(cfg.max_cards_per_plan <= cfg.hand_size)
-	assert_true(cfg.plan_gauge_ticks() >= 0)
+	assert_true(cfg.max_cards_per_focus <= cfg.hand_size)
+	assert_true(cfg.focus_gauge_ticks() >= 0)
 	assert_true(GridModel.is_in_bounds(cfg.player_start_cell))
 	assert_eq(GridModel.default_owner(cfg.player_start_cell.x), GridModel.Side.PLAYER, "player starts on their side")
 	for card in cfg.starter_deck:

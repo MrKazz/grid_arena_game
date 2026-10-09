@@ -21,12 +21,13 @@ going red.
 
 | Layer | Location | What it covers | Speed | Status |
 |---|---|---|---|---|
-| Unit: rules | `tests/unit/test_grid_model.gd`, `test_deck.gd`, `test_plan_gauge.gd`, `test_card_resolver.gd`, `test_battle_state.gd` | Grid bounds and ownership, movement, deck draw/discard/recycle/reshuffle, card conservation, targeting and mirroring, damage, plan/confirm validation, gauge, cooldowns, win/lose | ms | ✅ in place |
+| Unit: rules | `tests/unit/test_grid_model.gd`, `test_deck.gd`, `test_focus_gauge.gd`, `test_card_resolver.gd`, `test_battle_state.gd` | Grid bounds and ownership, movement, deck draw/discard/recycle/reshuffle, card conservation, targeting and mirroring, damage, Focus confirm validation, gauge, cooldowns, win/lose | ms | ✅ in place |
 | Unit: neutral column | `tests/unit/test_neutral_column.gd` | Middle column is neutral; both sides can enter it but not cross it; one occupant per tile for everyone; a tile frees when its occupant moves off or dies; wandering enemies route around an occupied neutral tile; attacks reach into and out of it | ms | ✅ in place |
-| Unit: enemy AI | `tests/unit/test_enemy_brain.gd` | Movement styles and intervals, staying on the enemy side, per-seed determinism, cooldown → telegraph → hit timing, dodging aimed and projectile attacks, no movement during wind-up, alignment gating, enemy kills end the battle, dead enemies cancel attacks, frozen while planning, spawning from config | ms | ✅ in place |
+| Unit: enemy AI | `tests/unit/test_enemy_brain.gd` | Movement styles and intervals, staying on the enemy side, per-seed determinism, cooldown → telegraph → hit timing, dodging aimed and projectile attacks, no movement during wind-up, alignment gating, enemy kills end the battle, dead enemies cancel attacks, frozen during Focus, spawning from config | ms | ✅ in place |
 | Determinism / replay | `tests/unit/test_replay_determinism.gd` | Same seed + same scripted inputs → identical state, including wandering/tracking enemies and their hits | ms | ✅ in place |
 | Data validation | `tests/unit/test_game_data.gd` | Every card, enemy attack and enemy loads, has an id matching its file name and sane numbers; enemies with attacks have a wind-up; default spawns are in bounds, on the enemy side and not stacked; default config is internally consistent | ms | ✅ in place |
-| Scene smoke / integration | `tests/integration/test_battle_scene.gd` | Main scene boots, input actions exist, real InputMap actions drive plan → move → attack | ~1 s | ✅ in place |
+| Unit: Focus menu | `tests/unit/test_focus_menu.gd` | Cursor movement and wrapping, card and button rows, picks ranked in selection order, unpick re-ranks, pick limit, auto-jump to OK when full, B undoes the last pick, button results | ms | ✅ in place |
+| Scene smoke / integration | `tests/integration/test_battle_scene.gd` | Main scene boots into the Focus screen; A/B bound to `0`/`.` and numpad; key hints at the bottom and tracking the phase; picking via real input shows the ranked queue and OK resumes with that order; the Next widget advances and empties; B undoes in Focus and attacks in battle; the Reshuffle button; enemies act | ~1.5 s | ✅ in place |
 | Golden replays | `tests/replays/*.json` (planned) | Recorded input logs from real play sessions replayed headless; final state compared to a stored snapshot | s | 🔜 next |
 | Balance simulations | `tools/simulate.gd` (planned) | Thousands of seeded bot-vs-bot or bot-vs-dummy battles; report win rate, time-to-kill, card usage; flag regressions beyond a threshold | min | 🔜 later |
 | Visual snapshots | (planned) | Render key scenes under `xvfb-run` and diff screenshots against approved images | s | 🔜 once art exists |
@@ -95,10 +96,12 @@ the two `godot` commands in the script by hand.
 - [ ] Movement feels responsive; holding a direction repeats at the intended rate.
 - [ ] Can't walk onto enemy tiles or into occupied tiles. Can walk into the gray column, unless an enemy is standing on that tile.
 - [ ] Enemies use the gray column too, and never step onto a gray tile you're standing on.
-- [ ] Battle opens in planning with a full hand; confirming with nothing selected works.
-- [ ] The gauge fills in the expected time; planning can't open early.
-- [ ] Selected cards queue in selection order; the HUD shows the queue.
-- [ ] Reshuffle works only while planning and respects the per-battle limit.
+- [ ] Battle opens in Focus with a full hand; confirming with nothing selected works.
+- [ ] The gauge fills in the expected time; Focus can't open early.
+- [ ] Focus screen: picked cards show their rank badge, the queue lists them in trigger order, and the details panel follows the cursor.
+- [ ] `0` and `.` (main row and numpad) act as A and B; the hint bar at the bottom matches what the keys do.
+- [ ] Selected cards trigger in pick order; the Next widget shows the upcoming card and reads "Empty" when the queue runs out.
+- [ ] Reshuffle works only in Focus and respects the per-battle limit.
 - [ ] Hit tiles flash where expected for each card (including the row projectile).
 - [ ] Enemy wind-ups are readable: the warning tiles appear early enough to react, and dodging works.
 - [ ] Enemies never stand on player tiles or overlap; the Gunner follows your row.

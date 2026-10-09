@@ -24,11 +24,11 @@ cell = Vector2i(5, 3)
 [resource]
 script = ExtResource("1_config")
 ticks_per_second = 60
-plan_gauge_seconds = 8.0
+focus_gauge_seconds = 8.0
 move_cooldown_ticks = 6
 basic_attack_cooldown_ticks = 12
 hand_size = 5
-max_cards_per_plan = 3
+max_cards_per_focus = 3
 reshuffles_per_battle = 1
 starter_deck = Array[ExtResource("2_card")]([ExtResource("b"), ExtResource("b"), ExtResource("b"), ExtResource("b"), ExtResource("s"), ExtResource("s"), ExtResource("s"), ExtResource("s"), ExtResource("w"), ExtResource("w"), ExtResource("w"), ExtResource("l"), ExtResource("l"), ExtResource("l"), ExtResource("x"), ExtResource("x")])
 player_max_hp = 100
