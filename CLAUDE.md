@@ -60,7 +60,8 @@ scenes/battle/battle.tscn      main scene (Battle -> GridView, Hud/{StatusBar, N
 scripts/core/                  pure rules: grid_model, combatant, card_data, card_resolver,
                                deck, focus_gauge, battle_config, battle_state,
                                enemy_data, enemy_spawn, enemy_brain
-scripts/battle/                nodes: battle.gd (input + stepping), grid_view.gd (drawing)
+scripts/battle/                nodes: battle.gd (input + stepping), grid_view.gd (drawing),
+                               input_bindings.gd (default key bindings + startup repair)
 scripts/ui/                    focus_menu.gd (pure cursor/pick logic, unit-tested),
                                focus_panel / next_card_widget / status_bar (read-only
                                views), card_art.gd (shared placeholder card drawing)
@@ -89,6 +90,15 @@ Two action buttons, placed on the two bottom numpad keys:
 
 Key hints are shown in a bar at the bottom of the screen and change with the phase.
 
+**Bindings live in two places that must match:** `project.godot` and
+`InputBindings.DEFAULTS` (`scripts/battle/input_bindings.gd`). At startup
+`InputBindings.ensure_defaults()` re-adds any missing action, because the Godot
+editor keeps project settings in memory. If the project is open during a pull
+that renames actions, the editor runs the game with the old map and those keys
+silently do nothing (this happened to `.`, `0` and Space). When adding or
+renaming an action, update both; `test_project_input_map_matches_input_bindings_defaults`
+fails if they drift. After pulling, use **Project > Reload Current Project**.
+
 **Focus screen layout rule:** the field must stay visible during Focus. UI goes
 in the band above the field (hand, details) or below it (queue, buttons),
 never over `GridView.field_rect()`. Only the area around the field is dimmed,
@@ -103,6 +113,10 @@ enforces this.
   `BattleState`/core classes with `Fixtures.config()`. Input or scene wiring
   → `tests/integration/`. New card → `test_game_data.gd` already covers it.
   Bug fix → a test that fails before the fix.
+- **Drive input tests with real key events** (`InputEventKey` via
+  `Input.parse_input_event`, then `Input.flush_buffered_events()`), not
+  `Input.action_press`. `action_press` skips the key bindings, so tests stay
+  green while the actual keys are broken. See `tests/integration/test_keyboard_input.gd`.
 - Tests are `extends TestCase`, files `test_*.gd`, methods `test_*`. Use
   `Fixtures` (`config()`, `card()`, `enemy()`) instead of depending on
   tuned values in `res://data`.

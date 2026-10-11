@@ -24,10 +24,21 @@ func _frames(count: int) -> void:
 		await tree.physics_frame
 
 
+## Presses the action's first default key as a real key event (the path an
+## OS keypress takes). Input.action_press() skips the key bindings, so it
+## can't catch broken or missing ones.
 func _tap(action: StringName) -> void:
-	Input.action_press(action)
+	var event := InputEventKey.new()
+	event.physical_keycode = InputBindings.DEFAULTS[action][0]
+	event.keycode = event.physical_keycode
+	event.pressed = true
+	Input.parse_input_event(event)
+	Input.flush_buffered_events()
 	await _frames(2)
-	Input.action_release(action)
+	var release: InputEventKey = event.duplicate()
+	release.pressed = false
+	Input.parse_input_event(release)
+	Input.flush_buffered_events()
 	await _frames(1)
 
 
