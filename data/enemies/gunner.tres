@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/enemy_data.gd" id="1_enemy"]
+[ext_resource type="Resource" path="res://data/enemy_attacks/enemy_shot.tres" id="2_attack"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"gunner"
+display_name = "Gunner"
+max_hp = 80
+movement = 2
+move_interval_ticks = 40
+attack = ExtResource("2_attack")
+attack_cooldown_ticks = 90
+attack_windup_ticks = 24
+attack_requires_alignment = true

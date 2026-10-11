@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/core/enemy_data.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+id = &"training_dummy"
+display_name = "Training Dummy"
+max_hp = 200
+movement = 0
+move_interval_ticks = 60
+attack_cooldown_ticks = 120
+attack_windup_ticks = 30
+attack_requires_alignment = false

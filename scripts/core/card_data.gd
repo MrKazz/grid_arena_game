@@ -7,6 +7,8 @@ enum Targeting {
 	TILES,
 	## Hits the first opponent in the user's row (projectile).
 	ROW_FIRST_HIT,
+	## Hits the tile of the nearest opponent at the moment of targeting.
+	AIMED,
 }
 
 @export var id: StringName

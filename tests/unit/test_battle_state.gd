@@ -11,7 +11,7 @@ func before_each() -> void:
 
 
 func _start_combat() -> void:
-	assert_true(state.confirm_plan([]), "confirm empty plan")
+	assert_true(state.confirm_focus([]), "confirm empty Focus")
 
 
 func _step(ticks: int) -> void:
@@ -19,61 +19,61 @@ func _step(ticks: int) -> void:
 		state.step()
 
 
-func test_battle_opens_in_planning_with_full_hand() -> void:
-	assert_eq(state.phase, BattleState.Phase.PLANNING)
+func test_battle_opens_in_focus_with_full_hand() -> void:
+	assert_eq(state.phase, BattleState.Phase.FOCUS)
 	assert_eq(state.deck.hand.size(), 5)
 	assert_eq(state.player.cell, Vector2i(1, 1))
 
 
-func test_step_does_nothing_while_planning() -> void:
+func test_step_does_nothing_while_in_focus() -> void:
 	_step(10)
 	assert_eq(state.tick_count, 0)
 	assert_eq(state.gauge.ticks, 0)
 
 
-func test_confirm_plan_queues_cards_in_order_and_resumes() -> void:
+func test_confirm_focus_queues_cards_in_order_and_resumes() -> void:
 	var first := state.deck.hand[2]
 	var second := state.deck.hand[0]
-	assert_true(state.confirm_plan([2, 0]))
+	assert_true(state.confirm_focus([2, 0]))
 	assert_eq(state.phase, BattleState.Phase.ACTIVE)
 	assert_eq(state.queued_cards, [first, second])
 	assert_eq(state.deck.hand.size(), 3)
 
 
-func test_confirm_plan_rejects_invalid_selection() -> void:
-	assert_false(state.confirm_plan([0, 1, 2, 3]), "over max_cards_per_plan")
-	assert_false(state.confirm_plan([1, 1]), "duplicate")
-	assert_false(state.confirm_plan([9]), "out of range")
-	assert_eq(state.phase, BattleState.Phase.PLANNING)
+func test_confirm_focus_rejects_invalid_selection() -> void:
+	assert_false(state.confirm_focus([0, 1, 2, 3]), "over max_cards_per_focus")
+	assert_false(state.confirm_focus([1, 1]), "duplicate")
+	assert_false(state.confirm_focus([9]), "out of range")
+	assert_eq(state.phase, BattleState.Phase.FOCUS)
 	assert_eq(state.deck.hand.size(), 5)
 
 
-func test_plan_only_opens_when_gauge_full() -> void:
+func test_focus_only_opens_when_gauge_full() -> void:
 	_start_combat()
-	assert_false(state.open_plan())
+	assert_false(state.open_focus())
 	_step(59)
-	assert_false(state.can_open_plan())
+	assert_false(state.can_open_focus())
 	_step(1)
-	assert_true(state.open_plan())
-	assert_eq(state.phase, BattleState.Phase.PLANNING)
+	assert_true(state.open_focus())
+	assert_eq(state.phase, BattleState.Phase.FOCUS)
 
 
-func test_opening_plan_refills_hand() -> void:
-	state.confirm_plan([0, 1])
+func test_opening_focus_refills_hand() -> void:
+	state.confirm_focus([0, 1])
 	_step(60)
-	state.open_plan()
+	state.open_focus()
 	assert_eq(state.deck.hand.size(), 5)
 
 
 func test_confirm_resets_gauge() -> void:
 	_start_combat()
 	_step(60)
-	state.open_plan()
-	state.confirm_plan([])
+	state.open_focus()
+	state.confirm_focus([])
 	assert_eq(state.gauge.ticks, 0)
 
 
-func test_reshuffle_only_while_planning_and_limited() -> void:
+func test_reshuffle_only_in_focus_and_limited() -> void:
 	assert_true(state.reshuffle())
 	assert_eq(state.reshuffles_left, 0)
 	assert_false(state.reshuffle(), "out of charges")
@@ -95,12 +95,12 @@ func test_unlimited_reshuffles() -> void:
 
 
 func test_move_respects_cooldown_and_border() -> void:
-	assert_false(state.try_move(Vector2i.RIGHT), "not while planning")
+	assert_false(state.try_move(Vector2i.RIGHT), "not during Focus")
 	_start_combat()
 	assert_true(state.try_move(Vector2i.RIGHT))
 	assert_false(state.try_move(Vector2i.RIGHT), "cooldown")
 	_step(4)
-	assert_true(state.try_move(Vector2i.RIGHT))
+	assert_true(state.try_move(Vector2i.RIGHT), "into the neutral column")
 	assert_eq(state.player.cell, Vector2i(3, 1))
 	_step(4)
 	assert_false(state.try_move(Vector2i.RIGHT), "enemy side")
@@ -119,7 +119,7 @@ func test_basic_attack_hits_and_cools_down() -> void:
 
 func test_using_card_discards_it() -> void:
 	var card := state.deck.hand[0]
-	state.confirm_plan([0])
+	state.confirm_focus([0])
 	state.try_use_card()
 	assert_eq(state.queued_cards.size(), 0)
 	assert_eq(state.deck.discard_pile, [card])
@@ -139,12 +139,12 @@ func test_killing_last_enemy_wins() -> void:
 	cfg.basic_attack_damage = 50
 	var s := BattleState.new(cfg)
 	var e := Combatant.new(&"e", GridModel.Side.ENEMY, 50)
-	s.add_enemy(e, Vector2i(6, 1))
-	s.confirm_plan([])
+	s.add_enemy(e, Vector2i(5, 1))
+	s.confirm_focus([])
 	s.try_basic_attack()
 	assert_eq(s.phase, BattleState.Phase.ENDED)
 	assert_eq(s.winner, GridModel.Side.PLAYER)
-	assert_null(s.grid.occupant_at(Vector2i(6, 1)), "dead enemies leave the grid")
+	assert_null(s.grid.occupant_at(Vector2i(5, 1)), "dead enemies leave the grid")
 	s.step()
 	assert_eq(s.tick_count, 0, "no ticks after the battle ends")
 

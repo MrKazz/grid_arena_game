@@ -22,9 +22,11 @@ trap 'rm -f "$LOG"' EXIT
 status=${PIPESTATUS[0]}
 
 # GDScript has no exceptions: runtime errors are logged and execution carries
-# on, so treat any engine-reported script error as a failure.
-if grep -qE "SCRIPT ERROR|Parse Error|Failed to load script|Invalid call|Invalid access" "$LOG"; then
-  echo "run_tests: engine reported script errors (see above)." >&2
+# on, so treat any engine-reported script error as a failure. Leaked objects
+# at exit usually mean a reference cycle (e.g. a lambda capturing the object
+# whose signal it is connected to), so fail on those too.
+if grep -qE "SCRIPT ERROR|Parse Error|Failed to load script|Invalid call|Invalid access|instances were leaked|resources still in use" "$LOG"; then
+  echo "run_tests: engine reported script errors or leaks (see above)." >&2
   status=1
 fi
 exit "$status"
