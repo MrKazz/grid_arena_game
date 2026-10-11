@@ -35,6 +35,11 @@ var menu := FocusMenu.new()
 
 
 func _ready() -> void:
+	# The editor can run the game with a stale input map (see InputBindings).
+	var repaired := InputBindings.ensure_defaults()
+	if not repaired.is_empty():
+		push_warning("Input map was missing bindings for %s; using defaults. If the Godot editor was open "
+				% ", ".join(repaired) + "during a git pull, use Project > Reload Current Project.")
 	if config == null:
 		config = BattleConfig.new()
 	Engine.physics_ticks_per_second = config.ticks_per_second
