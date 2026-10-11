@@ -81,13 +81,19 @@ Two action buttons, placed on the two bottom numpad keys:
 
 | Action | Keys | In battle | In Focus |
 |---|---|---|---|
-| `button_a` (A) | `0`, numpad `0` | Use the next queued card | Pick/unpick the highlighted card, or press the highlighted button (Reshuffle / OK) |
-| `button_b` (B) | `.`, numpad `.` | Basic attack | Undo the last pick |
+| `button_a` (A, confirm) | `.`, numpad `.` | Use the next queued card | Pick/unpick the highlighted card, or press the highlighted button (Reshuffle / OK, which resolves Focus) |
+| `button_b` (B, cancel) | `0`, numpad `0` | Basic attack | Undo the last pick |
 | `move_up/down/left/right` | WASD, arrows | Move | Move the cursor (up/down switches between cards and buttons) |
 | `open_focus` | Space, Enter, numpad Enter | Enter Focus when the gauge is full | Confirm (same as OK) |
 | `reshuffle` | R | — | Reshuffle (same as the button) |
 
 Key hints are shown in a bar at the bottom of the screen and change with the phase.
+
+**Focus screen layout rule:** the field must stay visible during Focus. UI goes
+in the band above the field (hand, details) or below it (queue, buttons),
+never over `GridView.field_rect()`. Only the area around the field is dimmed,
+with a light (≤ 50% alpha) layer. `test_focus_screen_leaves_the_field_visible`
+enforces this.
 
 ## Workflow
 

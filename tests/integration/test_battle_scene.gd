@@ -50,11 +50,11 @@ func test_input_actions_are_defined() -> void:
 	assert_false(InputMap.has_action(&"use_card"), "replaced by button_a")
 
 
-func test_a_and_b_are_on_zero_and_period_including_numpad() -> void:
+func test_confirm_on_period_and_cancel_on_zero_including_numpad() -> void:
 	var a := _keycodes(&"button_a")
-	assert_true(a.has(KEY_0) and a.has(KEY_KP_0), "A on 0 and numpad 0: %s" % [a])
+	assert_eq(a, [KEY_PERIOD, KEY_KP_PERIOD], "A/confirm on . and numpad . only")
 	var b := _keycodes(&"button_b")
-	assert_true(b.has(KEY_PERIOD) and b.has(KEY_KP_PERIOD), "B on . and numpad .: %s" % [b])
+	assert_eq(b, [KEY_0, KEY_KP_0], "B/cancel on 0 and numpad 0 only")
 	assert_true(_keycodes(&"open_focus").has(KEY_KP_ENTER), "numpad Enter opens Focus")
 
 
@@ -73,14 +73,31 @@ func test_scene_boots_into_focus_screen() -> void:
 	assert_eq(battle.focus_panel.highlighted_card(), state.deck.hand[0], "details show highlighted card")
 
 
+func test_focus_screen_leaves_the_field_visible() -> void:
+	await _frames(2)
+	var panel: FocusPanel = battle.focus_panel
+	var field: Rect2 = battle.grid_view.field_rect()
+	assert_eq(panel.field_rect, field, "panel knows where the field is")
+	for rect in panel.ui_rects():
+		assert_false(rect.intersects(field), "UI %s covers the field %s" % [rect, field])
+	for rect in panel.dim_rects():
+		assert_false(rect.intersects(field), "dim layer %s covers the field" % [rect])
+	assert_true(FocusPanel.DIM.a <= 0.5, "dim layer stays see-through (alpha %.2f)" % FocusPanel.DIM.a)
+	var dimmed := 0.0
+	for rect in panel.dim_rects():
+		dimmed += rect.get_area()
+	assert_eq(dimmed + field.get_area(), panel.size.x * panel.size.y, "dim covers everything else")
+
+
 func test_key_hints_sit_at_the_bottom_and_track_the_phase() -> void:
 	await _frames(2)
 	var hints: Label = battle.key_hints
 	assert_true(hints.position.y >= 300, "hints at the bottom (y=%d)" % hints.position.y)
-	assert_true(hints.text.contains("[0]") and hints.text.contains("[.]"), hints.text)
-	assert_true(hints.text.contains("undo"), "Focus hints: %s" % hints.text)
+	assert_true(hints.text.contains("[.] pick / OK"), "Focus hints: %s" % hints.text)
+	assert_true(hints.text.contains("[0] undo"), "Focus hints: %s" % hints.text)
 	await _tap(&"open_focus")
-	assert_true(hints.text.contains("attack"), "battle hints: %s" % hints.text)
+	assert_true(hints.text.contains("[.] use card"), "battle hints: %s" % hints.text)
+	assert_true(hints.text.contains("[0] attack"), "battle hints: %s" % hints.text)
 
 
 func test_pick_cards_rank_them_and_confirm_with_ok() -> void:

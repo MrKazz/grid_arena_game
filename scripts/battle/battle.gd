@@ -2,11 +2,14 @@ extends Node2D
 ## Battle scene root: owns the BattleState, steps it on fixed ticks, and
 ## translates input into state calls. Keep game rules out of this file.
 ##
-## Two action buttons, A (`button_a`: 0 / numpad 0) and B (`button_b`:
-## . / numpad .), mean different things per phase:
-##   battle: A = use next queued card, B = basic attack
-##   Focus:  A = pick/unpick card or press the highlighted button,
-##           B = undo the last pick
+## Two action buttons on the bottom numpad keys mean different things per phase:
+##   A / confirm (`button_a`: . / numpad .)
+##     battle: use the next queued card
+##     Focus:  pick/unpick the highlighted card, or press the highlighted
+##             button (OK resolves Focus)
+##   B / cancel (`button_b`: 0 / numpad 0)
+##     battle: basic attack
+##     Focus:  undo the last pick
 
 const DIRECTIONS := {
 	&"move_up": Vector2i.UP,
@@ -15,8 +18,8 @@ const DIRECTIONS := {
 	&"move_right": Vector2i.RIGHT,
 }
 
-const HINTS_ACTIVE := "WASD / Arrows  move     [0] use card     [.] attack     [Space] Focus%s"
-const HINTS_FOCUS := "Arrows  choose     [0] pick / press     [.] undo     [R] reshuffle     [Space] start"
+const HINTS_ACTIVE := "WASD / Arrows  move     [.] use card     [0] attack     [Space] Focus%s"
+const HINTS_FOCUS := "Arrows  choose     [.] pick / OK     [0] undo     [R] reshuffle     [Space] start"
 const HINTS_ENDED := "Battle over"
 
 @export var config: BattleConfig
@@ -41,6 +44,7 @@ func _ready() -> void:
 	next_card.state = state
 	focus_panel.state = state
 	focus_panel.menu = menu
+	focus_panel.field_rect = grid_view.field_rect()
 	_reset_menu()
 	_update_ui()
 	print("Battle started with seed %d" % state.rng_seed)

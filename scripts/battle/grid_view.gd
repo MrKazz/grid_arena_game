@@ -32,6 +32,11 @@ func _physics_process(_delta: float) -> void:
 	queue_redraw()
 
 
+## The whole field in canvas coordinates (this node has no camera or scaling).
+func field_rect() -> Rect2:
+	return Rect2(position, Vector2(GridModel.COLUMNS, GridModel.ROWS) * TILE_SIZE)
+
+
 func cell_rect(cell: Vector2i) -> Rect2:
 	return Rect2(Vector2(cell) * TILE_SIZE, TILE_SIZE - Vector2(TILE_GAP, TILE_GAP))
 

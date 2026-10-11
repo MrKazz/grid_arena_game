@@ -27,7 +27,7 @@ going red.
 | Determinism / replay | `tests/unit/test_replay_determinism.gd` | Same seed + same scripted inputs → identical state, including wandering/tracking enemies and their hits | ms | ✅ in place |
 | Data validation | `tests/unit/test_game_data.gd` | Every card, enemy attack and enemy loads, has an id matching its file name and sane numbers; enemies with attacks have a wind-up; default spawns are in bounds, on the enemy side and not stacked; default config is internally consistent | ms | ✅ in place |
 | Unit: Focus menu | `tests/unit/test_focus_menu.gd` | Cursor movement and wrapping, card and button rows, picks ranked in selection order, unpick re-ranks, pick limit, auto-jump to OK when full, B undoes the last pick, button results | ms | ✅ in place |
-| Scene smoke / integration | `tests/integration/test_battle_scene.gd` | Main scene boots into the Focus screen; A/B bound to `0`/`.` and numpad; key hints at the bottom and tracking the phase; picking via real input shows the ranked queue and OK resumes with that order; the Next widget advances and empties; B undoes in Focus and attacks in battle; the Reshuffle button; enemies act | ~1.5 s | ✅ in place |
+| Scene smoke / integration | `tests/integration/test_battle_scene.gd` | Main scene boots into the Focus screen; A/confirm bound to `.` and B/cancel to `0` (plus numpad); Focus UI never covers or dims the field; key hints at the bottom and tracking the phase; picking via real input shows the ranked queue and OK resumes with that order; the Next widget advances and empties; B undoes in Focus and attacks in battle; the Reshuffle button; enemies act | ~1.5 s | ✅ in place |
 | Golden replays | `tests/replays/*.json` (planned) | Recorded input logs from real play sessions replayed headless; final state compared to a stored snapshot | s | 🔜 next |
 | Balance simulations | `tools/simulate.gd` (planned) | Thousands of seeded bot-vs-bot or bot-vs-dummy battles; report win rate, time-to-kill, card usage; flag regressions beyond a threshold | min | 🔜 later |
 | Visual snapshots | (planned) | Render key scenes under `xvfb-run` and diff screenshots against approved images | s | 🔜 once art exists |
@@ -99,7 +99,8 @@ the two `godot` commands in the script by hand.
 - [ ] Battle opens in Focus with a full hand; confirming with nothing selected works.
 - [ ] The gauge fills in the expected time; Focus can't open early.
 - [ ] Focus screen: picked cards show their rank badge, the queue lists them in trigger order, and the details panel follows the cursor.
-- [ ] `0` and `.` (main row and numpad) act as A and B; the hint bar at the bottom matches what the keys do.
+- [ ] `.` confirms (pick, OK, use card) and `0` cancels (undo pick, basic attack), on both the main row and the numpad; the hint bar matches.
+- [ ] During Focus the whole field (units, HP, enemy warnings) stays clearly visible.
 - [ ] Selected cards trigger in pick order; the Next widget shows the upcoming card and reads "Empty" when the queue runs out.
 - [ ] Reshuffle works only in Focus and respects the per-battle limit.
 - [ ] Hit tiles flash where expected for each card (including the row projectile).
